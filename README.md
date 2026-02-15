@@ -254,7 +254,7 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 
 ## 🔗 Links
 
-- 📊 [Interactive Results Page](https://japneet644.github.io/NLU-Problem4/)
+- 📊 [Interactive Results Page](https://japneet1234.github.io/NLU-Problem4/)
 - 📖 [LaTeX Report](report/report.tex)
 - 📋 [Results Metrics](outputs/metrics.md)
 - 🐙 [GitHub Repository](https://github.com/japneet1234/NLU_Problem4)
