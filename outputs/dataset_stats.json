@@ -1,7 +1,0 @@
-{
-  "total_documents": 60000,
-  "sports": 30000,
-  "politics": 30000,
-  "train_size": 42000,
-  "test_size": 18000
-}
