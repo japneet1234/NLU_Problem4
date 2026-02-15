@@ -9,7 +9,7 @@
 
 A comprehensive machine learning study comparing 5 classical models with 4 feature representations for binary text classification on the AG News dataset.
 
-[View Results](https://japneet644.github.io/NLU-Problem4/) • [Read Report](report/report.tex) • [View Metrics](outputs/metrics.md)
+[View Results](https://japneet1234.github.io/NLU-Problem4/) • [Read Report](report/report.tex) • [View Metrics](outputs/metrics.md)
 
 </div>
 
@@ -167,7 +167,7 @@ A comprehensive **5+ page LaTeX academic report** is available in [`report/repor
 ## 🌐 Interactive Results
 
 Visit the **GitHub Pages project page** for an interactive visualization:
-👉 [https://japneet644.github.io/NLU-Problem4/](https://japneet644.github.io/NLU-Problem4/)
+👉 [https://japneet1234.github.io/NLU-Problem4/](https://japneet1234.github.io/NLU-Problem4/)
 
 Features:
 - 📊 Live statistics dashboard
@@ -254,7 +254,7 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 
 ## 🔗 Links
 
-- 📊 [Interactive Results Page](https://japneet644.github.io/NLU-Problem4/)
+- 📊 [Interactive Results Page](https://japneet1234.github.io/NLU-Problem4/)
 - 📖 [LaTeX Report](report/report.tex)
 - 📋 [Results Metrics](outputs/metrics.md)
 - 🐙 [GitHub Repository](https://github.com/japneet1234/NLU_Problem4)
