@@ -1,0 +1,758 @@
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports vs Politics Text Classifier</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --primary: #8b5cf6;
+        --secondary: #ec4899;
+        --accent: #06b6d4;
+        --dark-bg: #0f172a;
+        --dark-card: #1e293b;
+        --light-bg: #f8fafc;
+        --light-card: #ffffff;
+        --text-dark: #1e293b;
+        --text-light: #e2e8f0;
+        --text-muted: #64748b;
+        --border-dark: #334155;
+        --border-light: #e2e8f0;
+        --success: #10b981;
+        --info: #3b82f6;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        color: #e2e8f0;
+        background: linear-gradient(135deg, #0f172a 0%, #1a1f3a 50%, #14213d 100%);
+        line-height: 1.6;
+        min-height: 100vh;
+      }
+
+      /* Smooth gradient background */
+      body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: 
+          radial-gradient(circle at 20% 80%, rgba(139, 92, 246, 0.12) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(236, 72, 153, 0.08) 0%, transparent 50%),
+          transparent;
+        pointer-events: none;
+        z-index: -1;
+      }
+
+      /* Header */
+      header {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #1a1f3a 100%);
+        border-bottom: 2px solid rgba(139, 92, 246, 0.3);
+        padding: 3rem 0;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 8px 32px rgba(139, 92, 246, 0.15);
+      }
+
+      .header-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+      }
+
+      header h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      header p {
+        color: #94a3b8;
+        font-size: 1.1rem;
+        max-width: 600px;
+      }
+
+      /* Main content */
+      main {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 3rem 2rem;
+      }
+
+      /* Section styling */
+      section {
+        margin-bottom: 3rem;
+      }
+
+      h2 {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.9rem;
+        margin-bottom: 2rem;
+        background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        position: relative;
+        padding-bottom: 1rem;
+      }
+
+      h2::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 60px;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+        border-radius: 2px;
+      }
+
+      h3 {
+        font-size: 1.2rem;
+        color: #e2e8f0;
+        margin-bottom: 0.5rem;
+      }
+
+      /* Card Grid */
+      .card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .card {
+        background: linear-gradient(135deg, #1e293b 0%, #1a1f3a 100%);
+        border-radius: 14px;
+        padding: 2rem;
+        border: 1px solid rgba(139, 92, 246, 0.2);
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        animation: slideUp 0.6s ease-out;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+      }
+
+      .card:hover {
+        transform: translateY(-8px);
+        border-color: var(--primary);
+        box-shadow: 0 16px 40px rgba(139, 92, 246, 0.25);
+      }
+
+      .card-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .card h3 {
+        margin-bottom: 1rem;
+      }
+
+      .card p {
+        font-size: 0.95rem;
+        color: #cbd5e1;
+        margin-bottom: 1rem;
+      }
+
+      /* Badges/Pills */
+      .badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        border: none;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        color: #ffffff;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+      }
+
+      .badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+      }
+
+      /* Metric box */
+      .metric-highlight {
+        background: linear-gradient(135deg, #1e293b 0%, #1a1f3a 100%);
+        border: 2px solid var(--primary);
+        border-left: 5px solid var(--primary);
+        border-radius: 14px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 8px 24px rgba(139, 92, 246, 0.2);
+        backdrop-filter: blur(10px);
+      }
+
+      .metric-highlight strong {
+        color: #06b6d4;
+        font-weight: 600;
+      }
+
+      .metric-highlight h3 {
+        color: #8b5cf6;
+      }
+
+      /* Table styling */
+      .table-container {
+        background: linear-gradient(135deg, #1e293b 0%, #1a1f3a 100%);
+        border-radius: 14px;
+        overflow: hidden;
+        border: 1px solid rgba(139, 92, 246, 0.2);
+        box-shadow: 0 8px 24px rgba(139, 92, 246, 0.15);
+        margin-bottom: 2rem;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.95rem;
+      }
+
+      thead {
+        background: rgba(139, 92, 246, 0.15);
+        border-bottom: 2px solid rgba(139, 92, 246, 0.2);
+      }
+
+      th {
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: #06b6d4;
+      }
+
+      td {
+        padding: 1rem;
+        border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+        color: #cbd5e1;
+      }
+
+      tbody tr:hover {
+        background: rgba(139, 92, 246, 0.08);
+      }
+
+      tbody tr:nth-child(odd) {
+        background: rgba(139, 92, 246, 0.04);
+      }
+
+      .highlight-row {
+        background: rgba(139, 92, 246, 0.15);
+        border-left: 3px solid var(--primary);
+      }
+
+      .highlight-row:hover {
+        background: rgba(139, 92, 246, 0.22);
+      }
+
+      /* Code blocks */
+      .code-block {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: #e2e8f0;
+        padding: 1.5rem;
+        border-radius: 12px;
+        overflow-x: auto;
+        margin: 1.5rem 0;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        border: 1px solid rgba(139, 92, 246, 0.2);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+
+      /* Links */
+      code {
+        background: rgba(139, 92, 246, 0.15);
+        color: #06b6d4;
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        font-size: 0.9em;
+      }
+
+      /* Content box */
+      .content-box {
+        background: linear-gradient(135deg, #1e293b 0%, #1a1f3a 100%);
+        border-radius: 14px;
+        padding: 2rem;
+        border: 1px solid rgba(139, 92, 246, 0.2);
+        margin-bottom: 1.5rem;
+        box-shadow: 0 6px 20px rgba(139, 92, 246, 0.12);
+      }
+
+      .content-box h3 {
+        margin-bottom: 1.5rem;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .content-box p {
+        margin-bottom: 1rem;
+        color: #cbd5e1;
+        line-height: 1.8;
+      }
+
+      .content-box p:last-child {
+        margin-bottom: 0;
+      }
+
+      .content-box ul {
+        color: #cbd5e1;
+      }
+
+      .content-box li {
+        color: #cbd5e1;
+      }
+
+      .content-box strong {
+        color: #06b6d4;
+        font-weight: 600;
+      }
+
+      strong {
+        color: #06b6d4;
+      }
+
+      /* Stats grid */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin: 1.5rem 0;
+      }
+
+      .stat-item {
+        text-align: center;
+        padding: 2rem 1.5rem;
+        background: linear-gradient(135deg, #1e293b 0%, #1a1f3a 100%);
+        border-radius: 12px;
+        border: 2px solid var(--primary);
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 20px rgba(139, 92, 246, 0.2);
+        backdrop-filter: blur(10px);
+      }
+
+      .stat-item:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 32px rgba(139, 92, 246, 0.3);
+        border-color: var(--secondary);
+        background: linear-gradient(135deg, #2d3748 0%, #1f2937 100%);
+      }
+
+      .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+      }
+
+      .stat-label {
+        font-size: 0.95rem;
+        color: #cbd5e1;
+        font-weight: 500;
+      }
+
+      /* Links */
+      a {
+        color: #06b6d4;
+        text-decoration: none;
+        transition: color 0.3s ease;
+        font-weight: 500;
+      }
+
+      a:hover {
+        color: #8b5cf6;
+      }
+
+      /* Footer */
+      footer {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        border-top: 2px solid rgba(139, 92, 246, 0.3);
+        padding: 3rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+        margin-top: 4rem;
+        box-shadow: 0 -8px 32px rgba(139, 92, 246, 0.1);
+      }
+
+      footer p {
+        margin-bottom: 0.5rem;
+      }
+
+      footer a {
+        color: #8b5cf6;
+        font-weight: 500;
+      }
+
+      footer a:hover {
+        color: #06b6d4;
+      }
+
+      /* Animations */
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      /* Responsive design */
+      @media (max-width: 768px) {
+        header h1 {
+          font-size: 2rem;
+        }
+
+        h2 {
+          font-size: 1.5rem;
+        }
+
+        .card-grid {
+          grid-template-columns: 1fr;
+        }
+
+        table {
+          font-size: 0.85rem;
+        }
+
+        th, td {
+          padding: 0.75rem;
+        }
+
+        main {
+          padding: 2rem 1.5rem;
+        }
+
+        .content-box {
+          padding: 1.5rem;
+        }
+
+        .code-block {
+          padding: 1rem;
+          font-size: 0.8rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="header-content">
+        <h1>Sports vs Politics Classifier</h1>
+        <p>
+          A comprehensive machine learning study comparing 5 classic models with 4 feature encodings
+          on the AG News dataset (sports vs politics)
+        </p>
+      </div>
+    </header>
+
+    <main>
+      <!-- Overview Cards -->
+      <section>
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-icon">📊</div>
+            <h3>Dataset</h3>
+            <p>AG News dataset filtered to sports and politics (World class)</p>
+            <div>
+              <span class="badge">60,000 documents</span>
+              <span class="badge">30,000 sports</span>
+              <span class="badge">30,000 politics</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-icon">🔤</div>
+            <h3>Features</h3>
+            <p>Four feature extraction approaches compared</p>
+            <div>
+              <span class="badge">BoW Unigram</span>
+              <span class="badge">BoW Bigram</span>
+              <span class="badge">TF-IDF 1-gram</span>
+              <span class="badge">TF-IDF 1-2 gram</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-icon">🤖</div>
+            <h3>Models</h3>
+            <p>Five classic machine learning algorithms</p>
+            <div>
+              <span class="badge">Logistic Reg</span>
+              <span class="badge">Linear SVM</span>
+              <span class="badge">KNN</span>
+              <span class="badge">Naive Bayes</span>
+              <span class="badge">Random Forest</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-icon">📈</div>
+            <h3>Metrics</h3>
+            <p>Comprehensive evaluation on test set</p>
+            <div>
+              <span class="badge">Accuracy</span>
+              <span class="badge">Precision</span>
+              <span class="badge">Recall</span>
+              <span class="badge">F1 Score</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Top Results -->
+      <section>
+        <h2>🏆 Top Results</h2>
+        
+        <div class="metric-highlight">
+          <h3 style="margin-top: 0; margin-bottom: 1rem;">Best Configuration: TF-IDF (Bigram) + SVM</h3>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-value">0.9774</div>
+              <div class="stat-label">Accuracy</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">0.9774</div>
+              <div class="stat-label">F1 Score</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">0.9781</div>
+              <div class="stat-label">Precision</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">0.9774</div>
+              <div class="stat-label">Recall</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Vectorizer</th>
+                <th>Model</th>
+                <th>Accuracy</th>
+                <th>Precision</th>
+                <th>Recall</th>
+                <th>F1 Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="highlight-row">
+                <td>#1</td>
+                <td>TF-IDF (1-2 gram)</td>
+                <td>SVM</td>
+                <td>0.9774</td>
+                <td>0.9781</td>
+                <td>0.9774</td>
+                <td><strong>0.9774</strong></td>
+              </tr>
+              <tr>
+                <td>#2</td>
+                <td>TF-IDF (1-gram)</td>
+                <td>SVM</td>
+                <td>0.9762</td>
+                <td>0.9762</td>
+                <td>0.9762</td>
+                <td><strong>0.9762</strong></td>
+              </tr>
+              <tr>
+                <td>#3</td>
+                <td>BoW (1-2 gram)</td>
+                <td>Logistic Reg.</td>
+                <td>0.9751</td>
+                <td>0.9751</td>
+                <td>0.9751</td>
+                <td><strong>0.9751</strong></td>
+              </tr>
+              <tr>
+                <td>#4</td>
+                <td>BoW (1-2 gram)</td>
+                <td>Naive Bayes</td>
+                <td>0.9741</td>
+                <td>0.9742</td>
+                <td>0.9741</td>
+                <td><strong>0.9741</strong></td>
+              </tr>
+              <tr>
+                <td>#5</td>
+                <td>TF-IDF (1-gram)</td>
+                <td>Logistic Reg.</td>
+                <td>0.9736</td>
+                <td>0.9736</td>
+                <td>0.9736</td>
+                <td><strong>0.9736</strong></td>
+              </tr>
+              <tr>
+                <td>#6</td>
+                <td>BoW (1-2 gram)</td>
+                <td>SVM</td>
+                <td>0.9734</td>
+                <td>0.9734</td>
+                <td>0.9734</td>
+                <td><strong>0.9734</strong></td>
+              </tr>
+              <tr>
+                <td>#7</td>
+                <td>TF-IDF (1-2 gram)</td>
+                <td>Logistic Reg.</td>
+                <td>0.9734</td>
+                <td>0.9734</td>
+                <td>0.9734</td>
+                <td><strong>0.9734</strong></td>
+              </tr>
+              <tr>
+                <td>#8</td>
+                <td>TF-IDF (1-gram)</td>
+                <td>Naive Bayes</td>
+                <td>0.9732</td>
+                <td>0.9732</td>
+                <td>0.9732</td>
+                <td><strong>0.9732</strong></td>
+              </tr>
+              <tr>
+                <td>#9</td>
+                <td>BoW (unigram)</td>
+                <td>Logistic Reg.</td>
+                <td>0.9732</td>
+                <td>0.9732</td>
+                <td>0.9732</td>
+                <td><strong>0.9732</strong></td>
+              </tr>
+              <tr>
+                <td>#10</td>
+                <td>TF-IDF (1-2 gram)</td>
+                <td>Naive Bayes</td>
+                <td>0.9729</td>
+                <td>0.9729</td>
+                <td>0.9729</td>
+                <td><strong>0.9729</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Key Findings -->
+      <section>
+        <h2>💡 Key Findings</h2>
+        
+        <div class="content-box">
+          <h3>Model Performance Analysis</h3>
+          
+          <div style="border-left: 3px solid var(--primary); padding-left: 1.5rem; margin-bottom: 1.5rem;">
+            <h4 style="color: var(--primary); margin-bottom: 0.5rem;">🎯 Linear Models Excel</h4>
+            <p>Logistic Regression and SVM achieved the highest average F1 scores (~0.973), demonstrating their effectiveness on high-dimensional sparse text data. The best configuration (TF-IDF bigram + SVM) reached 97.74% F1 score.</p>
+          </div>
+
+          <div style="border-left: 3px solid var(--secondary); padding-left: 1.5rem; margin-bottom: 1.5rem;">
+            <h4 style="color: var(--secondary); margin-bottom: 0.5rem;">📊 TF-IDF Significantly Better</h4>
+            <p>TF-IDF representations significantly outperformed Bag of Words (+5.11% F1), demonstrating that inverse document frequency weighting helps distinguish topical keywords from common words.</p>
+          </div>
+
+          <div style="border-left: 3px solid var(--accent); padding-left: 1.5rem; margin-bottom: 1.5rem;">
+            <h4 style="color: var(--accent); margin-bottom: 0.5rem;">🎲 Multiple Strong Configurations</h4>
+            <p>The top 5 models achieved F1 scores between 97.36% and 97.74%, indicating several viable approaches for this classification task with realistic performance metrics.</p>
+          </div>
+
+          <div style="border-left: 3px solid var(--info); padding-left: 1.5rem; margin-bottom: 1.5rem;">
+            <h4 style="color: var(--info); margin-bottom: 0.5rem;">📉 KNN Struggles with High Dimensionality</h4>
+            <p>KNN performed poorly (F1 = 0.64-0.80), suffering from the curse of dimensionality where distance metrics become unreliable in sparse high-dimensional feature spaces.</p>
+          </div>
+
+          <div style="border-left: 3px solid var(--success); padding-left: 1.5rem;">
+            <h4 style="color: var(--success); margin-bottom: 0.5rem;">⚠️ Dataset Transition: BBC → AG News</h4>
+            <p>We initially used the BBC News dataset but found it produced unrealistic 100% accuracy across multiple models. The BBC dataset has highly distinct topical vocabulary making classes trivially separable. We switched to AG News (60K documents) for more realistic evaluation with vocabulary overlap between sports and politics.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Dataset Statistics -->
+      <section>
+        <h2>📋 Dataset Statistics</h2>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-value">60,000</div>
+            <div class="stat-label">Total Documents</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">30,000</div>
+            <div class="stat-label">Sports (50.0%)</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">30,000</div>
+            <div class="stat-label">Politics (50.0%)</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">42,000</div>
+            <div class="stat-label">Training Set (70%)</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">18,000</div>
+            <div class="stat-label">Test Set (30%)</div>
+          </div>
+        </div>
+      </section>
+
+
+    <footer>
+      <p><strong>Sports vs Politics Text Classification</strong></p>
+      <p>NLU Problem 4 | Machine Learning Classification</p>
+      <p style="font-size: 0.9rem; margin-top: 1rem; color: #94a3b8;">
+        Japneet Singh (B23CS1022) | 
+        <a href="https://github.com">Repository</a> • 
+        <a href="">Report</a>
+      </p>
+    </footer>
+  </body>
+  </html> 

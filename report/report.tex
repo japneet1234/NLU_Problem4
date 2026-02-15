@@ -1,0 +1,278 @@
+\documentclass[12pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{subcaption}
+\documentclass[12pt]{article}
+
+% Page layout
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+
+% Fonts (modern, professional)
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+
+% Graphics & tables
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+
+% Colors & code
+\usepackage{xcolor}
+\definecolor{codegray}{RGB}{248,248,248}
+\definecolor{sectionblue}{RGB}{30,60,120}
+
+\usepackage{listings}
+\lstset{
+  backgroundcolor=\color{codegray},
+  basicstyle=\ttfamily\small,
+  frame=single,
+  breaklines=true
+}
+
+% Hyperlinks
+\usepackage[hidelinks]{hyperref}
+
+% Section styling
+\usepackage{titlesec}
+\titleformat{\section}
+  {\large\bfseries\color{sectionblue}}
+  {\thesection}{1em}{}
+
+\titleformat{\subsection}
+  {\normalsize\bfseries}
+  {\thesubsection}{1em}{}
+
+% Captions
+\usepackage{caption}
+\usepackage{subcaption}
+
+% Header / Footer
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Sports vs Politics Text Classification}
+\fancyhead[R]{B23CS1022}
+\fancyfoot[C]{\thepage}
+
+
+
+\definecolor{codegray}{RGB}{248,248,248}
+\lstset{
+  backgroundcolor=\color{codegray},
+  basicstyle=\ttfamily\small,
+  frame=single,
+  breaklines=true
+}
+
+% \title{Sports vs Politics Text Classification}
+% \author{B23CS1022 Problem 4}
+% \date{}
+\title{
+\vspace{-1.5cm}
+\textbf{\Huge Sports vs Politics Text Classification}\\[0.5em]
+\large  Comparison Using Classical Machine Learning Models
+}
+
+\author{
+\textbf{Japneet Singh}\\
+Roll Number: B23CS1022\\
+\vspace{0.5em}
+\small
+\href{https://github.com/japneet644/NLU-Problem4}{GitHub Repository} $\mid$ 
+\href{https://japneet644.github.io/NLU-Problem4/}{Project Page}
+}
+
+\date{}
+
+
+\begin{document}
+\maketitle
+\onehalfspacing
+
+% \section{Abstract}
+% This report presents a binary text classification system that labels documents as \textit{Sports} or \textit{Politics}. Using the public BBC News dataset, we compare five traditional machine learning models: Logistic Regression, K-Nearest Neighbors, Support Vector Machine, Naive Bayes, and Random Forest. For feature encoding we evaluate Bag of Words, TF-IDF unigram, and TF-IDF with bigrams. The experimental results show that multiple models achieve near-perfect performance, indicating strong topic separability in the BBC corpus.
+
+\section{Introduction}
+The goal of this project is to design a classifier that reads an input document and decides whether it is about sports or politics. This task resembles real-world content moderation, topic discovery, and news tagging systems. Although modern deep learning approaches exist, classic machine learning models remain strong baselines for small and medium-scale datasets. We therefore emphasize interpretability, reproducibility, and reliable quantitative comparisons.
+
+\section{Data Collection}
+We initially experimented with the BBC News dataset but encountered a critical issue: the filtered sports vs politics subset achieved near-perfect accuracy (100\%) across multiple models, suggesting the task was too simple for meaningful evaluation. This occurs because BBC articles are professionally edited with highly distinct topical vocabulary, making the classes trivially separable.
+
+To obtain more realistic performance metrics, we switched to the AG News dataset. AG News is a widely-used benchmark containing news articles. The full dataset includes four categories: World, Sports, Business, and Science/Technology. For our binary classification task, we map \textit{World} to politics and \textit{Sports} to sports, creating a balanced 60,000-document corpus (30,000 per class).
+
+\section{Dataset Description and Analysis}
+The AG News sports vs politics dataset contains 60,000 documents with perfect class balance (30,000 documents per class). We report dataset statistics in Table~\ref{tab:data}. The sports class contains coverage of matches, leagues, athletes, and tournaments. The politics class (derived from World news) includes elections, policy debates, international relations, and conflicts. Unlike the BBC dataset, AG News articles exhibit more vocabulary overlap and stylistic variation, making classification more challenging and realistic.
+
+\begin{table}[h]
+\centering
+\caption{Dataset statistics extracted from the preprocessing pipeline.}
+\label{tab:data}
+\begin{tabular}{l r}
+\toprule
+Metric & Value \\
+\midrule
+Total documents & 60,000 \\
+Sports documents & 30,000 (50.0\%) \\
+Politics documents & 30,000 (50.0\%) \\
+Train size & 42,000 (70.0\%) \\
+Test size & 18,000 (30.0\%) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Feature Representations}
+Text documents are unstructured data. To apply machine learning, we must convert documents into numerical feature vectors. We evaluated three standard approaches:
+
+\begin{itemize}
+  \item \textbf{Bag of Words (BoW).} The text is tokenized into words, and each document is represented as a vector of word counts. A document with 50 occurrences of ``baseball'' will have a larger count for the ``baseball'' feature. BoW discards word order but is simple and interpretable. We tested unigrams (single words) and bigrams (pairs of consecutive words).
+  
+\item \textbf{TF-IDF (Unigram).} Term Frequency-Inverse Document Frequency (TF-IDF) improves upon BoW by down-weighting words that appear in many documents. Mathematically, TF-IDF($t, d$) = $\text{TF}(t, d) \cdot \log(\frac{N}{DF(t)})$, where $\text{TF}$ is the frequency of term $t$ in document $d$, $N$ is the total number of documents, and $DF(t)$ is the document frequency of $t$. Words like ``the'' appear in almost all documents (high $DF$), so their IDF weight is low. Domain-specific words like ``baseball'' appear in few documents, so their IDF weight is high. We test unigram TF-IDF.
+  
+  \item \textbf{TF-IDF (1--2 Grams).} We also compute TF-IDF on unigrams and bigrams together, allowing the model to learn both individual word importance and phrase importance. Bigrams such as ``world cup'' or ``congress bill'' may capture topical patterns more accurately, though they introduce additional sparsity.
+\end{itemize}
+
+
+\section{Models}
+
+Five commonly used supervised learning models were evaluated to compare their effectiveness for text classification. These models represent different learning approaches and are widely used in practice.
+
+\begin{itemize}
+  \item \textbf{Logistic Regression.} A linear classification model that estimates the probability of a document belonging to a class. It is simple, efficient, and works well with high-dimensional text features such as TF-IDF. The learned weights also provide insight into which words are important for classification.
+  
+  \item \textbf{K-Nearest Neighbors (KNN).} A distance-based method that assigns a class based on the labels of the nearest training examples. In this study, a fixed value of $k$ was used. While KNN is easy to understand, its performance degrades for high-dimensional and sparse text data.
+  
+  \item \textbf{Support Vector Machine (SVM).} A linear classifier that separates classes by finding a decision boundary with maximum margin. Linear SVMs are well suited for text classification tasks and often achieve strong generalization performance.
+  
+  \item \textbf{Multinomial Naive Bayes.} A probabilistic model commonly used for text data. It assumes independence between words given the class, which simplifies computation. Despite this assumption, it performs well on bag-of-words features and is very fast to train.
+  
+  \item \textbf{Random Forest.} An ensemble learning method based on multiple decision trees. It is effective for many structured datasets, but its performance is limited when applied to sparse, high-dimensional text representations.
+\end{itemize}
+
+
+\section{Experimental Setup}
+\subsection{Data Split and Evaluation Protocol}
+We performed a single stratified split: 70\% training (42,000 documents) and 30\% test (18,000 documents). The larger test set provides a more reliable estimate of generalization performance on this sizable corpus. Stratification ensures both splits maintain the perfect 50-50 class balance. We fix the random seed for reproducibility.
+
+\subsection{Feature Extraction Pipeline}
+For each of the four feature representations (BoW unigram, BoW bigram, TF-IDF unigram, TF-IDF bigram), the pipeline:
+\begin{enumerate}
+  \item Tokenizes the raw text into words.
+  % \item Removes (or keeps) tokens appearing in fewer than 2 documents.
+  \item Computes counts or TF-IDF statistics on the training set.
+  \item Transforms both training and test sets using the fitted vectorizer.
+\end{enumerate}
+% This ensures no data leakage between train and test splits.
+
+\subsection{Model Training and Inference}
+For each (vectorizer, model) pair, we:
+\begin{enumerate}
+  \item Fit the model on the training features and labels.
+  \item Generate predictions on the test set.
+  \item Compute Accuracy, Precision (macro), Recall (macro), and F1 (macro).
+\end{enumerate}
+We use macro-averaging for multi-class metrics to give equal weight to each class.
+
+\subsection{Metrics}
+\begin{itemize}
+  \item \textbf{Accuracy}: percentage of correct predictions.
+  \item \textbf{Precision (macro)}: average precision across classes, where precision = $\frac{TP}{TP+FP}$.
+  \item \textbf{Recall (macro)}: average recall across classes, where recall = $\frac{TP}{TP+FN}$.
+  \item \textbf{F1 (macro)}: the harmonic mean of precision and recall, giving a balanced view of performance.
+\end{itemize}
+All metrics are computed on the test set.
+
+\section{Results and Quantitative Comparison}
+Table~\ref{tab:results} summarizes the top five model configurations, ranked by F1 score. Linear models with TF-IDF features achieve the strongest performance, with the best configuration (TF-IDF bigram + SVM) reaching 97.7\% F1 score. TF-IDF representations significantly outperform Bag of Words, demonstrating the importance of term weighting for this task.
+
+\begin{table}[h]
+\centering
+\caption{Top 5 configurations ranked by F1 (macro)}
+\label{tab:results}
+\begin{tabular}{l l r r r r}
+\toprule
+Vectorizer & Model & Accuracy & Prec. & Recall & F1 \\
+\midrule
+TF-IDF (1-2 gram) & SVM & 0.977 & 0.978 & 0.977 & 0.977 \\
+TF-IDF (1-gram) & SVM & 0.976 & 0.976 & 0.976 & 0.976 \\
+BoW (1-2 gram) & LogReg & 0.975 & 0.975 & 0.975 & 0.975 \\
+BoW (1-2 gram) & Naive Bayes & 0.974 & 0.974 & 0.974 & 0.974 \\
+TF-IDF (1-gram) & LogReg & 0.974 & 0.974 & 0.974 & 0.974 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% \subsection{Observations}
+% \textbf { TF-IDF Unigram SVM} achieved the best overall performance with F1=0.942, demonstrating that a simple linear decision boundary in normalized keyword space effectively separates sports and politics articles. Precision and recall are balanced (0.946 and 0.939), indicating no systematic bias toward either class.
+
+% \textbf{Naive Bayes} with Bag of Words also reaches F1=0.942, suggesting that probabilistic keyword modeling is equally effective. The model leverages word frequency statistics naturally suited to this task.
+
+% \textbf{KNN underperformance} (F1 = 0.55--0.70) reflects the curse of dimensionality: in sparse, high-dimensional text spaces, distance metrics become uninformative, and instance-based learning struggles.
+
+% \textbf{Random Forest} (F1 = 0.90--0.91) performs above KNN but below linear models. Sparse features make it difficult for trees to learn effective split rules; each feature is too sparse to capture the decision boundary efficiently.
+
+\section{Discussion}
+\begin{itemize}
+    \item \textbf{Linear Models (Logistic Regression \& SVM):} These models achieved the highest performance (F1 $\approx$ 0.97), demonstrating their effectiveness on high-dimensional sparse text data. SVM with TF-IDF features reached the top score of 97.7\%.
+
+    \item \textbf{Naive Bayes:} Despite its strong independence assumption, Naive Bayes achieved competitive performance (F1 = 0.973), showing that probabilistic word frequency modeling is well-suited to this task.
+
+    \item \textbf{K-Nearest Neighbors (KNN):} KNN struggled significantly (F1 = 0.64--0.80), suffering from the curse of dimensionality in sparse feature spaces where distance metrics become unreliable.
+
+    \item \textbf{Random Forests:} Random Forest achieved solid but lower performance (F1 = 0.962) compared to linear models, consistent with the difficulty of learning effective split rules in sparse high-dimensional spaces.
+
+    \item \textbf{TF-IDF vs. Bag of Words:} TF-IDF significantly outperformed BoW (+5.1\% F1), demonstrating the value of inverse document frequency weighting in distinguishing topical keywords from common words.
+\end{itemize}
+
+\section{Limitations}
+\begin{itemize}
+   \item \textbf{Language-Specific:}  The entire system is English-only and cannot handle multilingual news articles or code-mixed content.
+
+\item \textbf{Minimal Text Preprocessing:} No stemming, lemmatization, or advanced normalization was applied; preprocessing techniques could impact performance.
+
+\item \textbf{Simple Text Representation:} Feature extraction methods such as Bag of Words and TF-IDF do not capture deeper semantic meaning, word order, or long-range contextual dependencies within sentences.
+
+\item \textbf{No Feature Selection:} All features meeting the minimum document frequency threshold were used without systematic feature selection (chi-square, mutual information, etc.).
+
+\item \textbf{Temporal Bias:} Models trained on historical news data may not generalize well to future events with new terminology or shifting political landscapes.
+
+\end{itemize}
+
+\section{Conclusion and Future Work}
+
+In this project, a binary text classification system was developed to classify news articles into Sports and Politics categories. After initial experiments with the BBC News dataset revealed trivially perfect classification (100\% accuracy), we adopted the AG News corpus to obtain more realistic and challenging evaluation metrics. Different feature extraction techniques and machine learning models were explored and compared. The results show that linear classifiers such as SVM and Logistic Regression achieve strong performance (F1 $\approx$ 97.7\%) when combined with TF-IDF features. Overall, the study demonstrates that classical machine learning techniques remain effective baselines for text classification, with TF-IDF weighting providing significant advantages over raw word counts.
+
+\subsection{Key Observations}
+\begin{enumerate}
+    \item \textbf{Effectiveness of TF-IDF:} TF-IDF features consistently provided better results than simple word counts for most classifiers.
+    \item \textbf{Strength of Linear Models:} Linear models such as Logistic Regression and SVM were more suitable for sparse text data than tree-based or instance-based methods.
+    \item \textbf{Model Simplicity:} Simpler models with fewer assumptions were easier to train, interpret, and compare, making them good baseline choices.
+\end{enumerate}
+
+\subsection{Future Work}
+\begin{itemize}
+    \item \textbf{Improved Feature Representations:} Future work could explore dense word embeddings to better capture semantic relationships between words.
+    \item \textbf{Hyperparameter Tuning:} Applying systematic tuning techniques such as grid search and cross-validation may further improve model performance.
+    \item \textbf{Larger and Diverse Datasets:} Training and testing the models on more recent and diverse text sources could improve generalization.
+    \item \textbf{Multi-class Classification:} Extending the system to handle more than two categories would help evaluate its scalability and practical usefulness.
+\end{itemize}
+
+
+
+\subsection{Project Resources:}
+\begin{itemize}
+    \item \textbf{GitHub Repository:} \url{https://github.com/japneet644/NLU-Problem4}
+    \item \textbf{Github Page:} \url{https://japneet644.github.io/NLU-Problem4/}
+\end{itemize}
+
+\end{document}
